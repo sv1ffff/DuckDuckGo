@@ -19,7 +19,7 @@ The following rule files contain detailed guidance for specific topics. Read the
 
 DuckDuckGo Android is a privacy-focused browser with 100+ Gradle modules. The app provides built-in search, tracker blocking, HTTPS enforcement, and other privacy features.
 
-**SDK targets:** minSdk 26, targetSdk 35, compileSdk 35
+**SDK targets:** minSdk 28, targetSdk 35, compileSdk 35
 **Language:** Kotlin (1.9.24), Java 17 (JVM toolchain)
 **Build:** Gradle 7.6, AGP via refreshVersions, Anvil (Dagger2)
 
