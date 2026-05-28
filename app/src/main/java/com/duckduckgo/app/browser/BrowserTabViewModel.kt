@@ -3388,7 +3388,7 @@ class BrowserTabViewModel @Inject constructor(
         webViewSessionStorage.saveSession(webView, tabId)
     }
 
-    fun restoreWebViewState(
+    suspend fun restoreWebViewState(
         webView: WebView?,
         lastUrl: String,
     ) {
