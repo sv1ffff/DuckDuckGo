@@ -78,8 +78,6 @@ class FakeDuckChat(
         inputScreenUserSettingEnabled.value = enabled
     }
 
-    override suspend fun isInputScreenEverEnabled(): Boolean = false
-
     override suspend fun setCosmeticInputScreenUserSetting(enabled: Boolean) {
         cosmeticInputScreenUserSettingEnabled.value = enabled
     }
