@@ -23,12 +23,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -53,6 +59,7 @@ import com.duckduckgo.common.ui.compose.cards.DaxSurface
 import com.duckduckgo.common.ui.compose.checkbox.DaxCheckbox
 import com.duckduckgo.common.ui.compose.divider.DaxHorizontalDivider
 import com.duckduckgo.common.ui.compose.divider.DaxVerticalDivider
+import com.duckduckgo.common.ui.compose.layout.DaxScaffold
 import com.duckduckgo.common.ui.compose.message.DaxAction
 import com.duckduckgo.common.ui.compose.message.remote.DaxBigSingleActionMessage
 import com.duckduckgo.common.ui.compose.message.remote.DaxBigTwoActionsMessage
@@ -62,6 +69,7 @@ import com.duckduckgo.common.ui.compose.message.remote.DaxSmallMessage
 import com.duckduckgo.common.ui.compose.radiobutton.DaxRadioButton
 import com.duckduckgo.common.ui.compose.switch.DaxSwitch
 import com.duckduckgo.common.ui.compose.text.DaxText
+import com.duckduckgo.common.ui.compose.theme.DuckDuckGoTheme
 import com.duckduckgo.common.ui.internal.R
 import com.duckduckgo.common.ui.internal.ui.setupThemedComposeView
 import com.duckduckgo.common.ui.view.MessageCta
@@ -720,6 +728,61 @@ sealed class ComponentViewHolder(val view: View) : RecyclerView.ViewHolder(view)
         }
     }
 
+    class ScaffoldComponentViewHolder(
+        parent: ViewGroup,
+        private val isDarkTheme: Boolean,
+    ) : ComponentViewHolder(inflate(parent, R.layout.component_scaffold)) {
+        @OptIn(ExperimentalMaterial3Api::class)
+        override fun bind(component: Component) {
+            view.setupThemedComposeView(R.id.composeScaffold, isDarkTheme) {
+                DaxScaffold(
+                    modifier = Modifier.height(400.dp),
+                    topBar = {
+                        TopAppBar(
+                            modifier = Modifier.shadow(elevation = 4.dp),
+                            title = {
+                                DaxText(
+                                    text = "Bookmarks",
+                                    style = DuckDuckGoTheme.typography.h2,
+                                )
+                            },
+                            navigationIcon = {
+                                DaxIconButton(
+                                    iconPainter = painterResource(CommonR.drawable.ic_arrow_left_24),
+                                    contentDescription = "Back",
+                                    onClick = { },
+                                )
+                            },
+                            actions = {
+                                DaxIconButton(
+                                    iconPainter = painterResource(CommonR.drawable.ic_ai_chat_24_solid_color),
+                                    contentDescription = "Search",
+                                    onClick = { },
+                                )
+                            },
+                            colors = TopAppBarColors(
+                                containerColor = DuckDuckGoTheme.colors.backgrounds.background,
+                                scrolledContainerColor = DuckDuckGoTheme.colors.backgrounds.surface,
+                                navigationIconContentColor = DuckDuckGoTheme.colors.icons.primary,
+                                titleContentColor = DuckDuckGoTheme.colors.text.primary,
+                                actionIconContentColor = DuckDuckGoTheme.colors.icons.primary,
+                                subtitleContentColor = DuckDuckGoTheme.colors.text.primary,
+                            ),
+                            scrollBehavior = null,
+                        )
+                    },
+                ) { paddingValues ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        DaxText(text = "Content goes here")
+                    }
+                }
+            }
+        }
+    }
+
     class SettingsListItemComponentViewHolder(parent: ViewGroup) :
         ComponentViewHolder(inflate(parent, R.layout.component_settings)) {
         override fun bind(component: Component) {
@@ -753,6 +816,7 @@ sealed class ComponentViewHolder(val view: View) : RecyclerView.ViewHolder(view)
                 Component.TWO_LINE_LIST_ITEM -> TwoLineItemComponentViewHolder(parent)
                 Component.SECTION_DIVIDER -> DividerComponentViewHolder(parent, isDarkTheme)
                 Component.CARD -> CardComponentViewHolder(parent, isDarkTheme)
+                Component.SCAFFOLD -> ScaffoldComponentViewHolder(parent, isDarkTheme)
                 Component.SETTINGS_LIST_ITEM -> SettingsListItemComponentViewHolder(parent)
                 else -> {
                     TODO()
