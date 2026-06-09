@@ -145,6 +145,21 @@ interface DuckChatPixels {
     fun reportNativeStorageReaderUsed(native: Boolean)
     fun reportNativeStorageDeletionUsed(native: Boolean)
     fun reportVoiceSessionStarted()
+
+    fun fireImageGenerationSelected()
+    fun fireImageGenerationDeselected()
+    fun fireImageGenerationSubmitted()
+    fun fireWebSearchSelected()
+    fun fireWebSearchDeselected()
+    fun fireWebSearchSubmitted()
+    fun firePromptSubmitted(
+        selectedTool: String,
+        modelId: String?,
+        reasoningEffort: String?,
+        hasImageAttachment: Boolean,
+        hasFileAttachment: Boolean,
+        hasText: Boolean,
+    )
 }
 
 @ContributesBinding(AppScope::class)
@@ -157,6 +172,17 @@ class RealDuckChatPixels @Inject constructor(
     private val duckAiMetricCollector: DuckAiMetricCollector,
     private val termsOfServiceHandler: DuckChatTermsOfServiceHandler,
 ) : DuckChatPixels {
+
+    private fun fireCountAndDaily(
+        count: DuckChatPixelName,
+        daily: DuckChatPixelName,
+        parameters: Map<String, String> = emptyMap(),
+    ) {
+        appCoroutineScope.launch(dispatcherProvider.io()) {
+            pixel.fire(count, parameters = parameters)
+            pixel.fire(daily, parameters = parameters, type = Pixel.PixelType.Daily())
+        }
+    }
 
     override fun sendReportMetricPixel(reportMetric: ReportMetric, modelTier: ModelTier?) {
         appCoroutineScope.launch(dispatcherProvider.io()) {
@@ -395,6 +421,59 @@ class RealDuckChatPixels @Inject constructor(
 
     override fun reportVoiceSessionStarted() {
         pixel.fire(DuckChatPixelName.DUCK_CHAT_VOICE_SESSION_STARTED)
+    }
+
+    override fun fireImageGenerationSelected() = fireCountAndDaily(
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_IMAGE_GENERATION_SELECTED_COUNT,
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_IMAGE_GENERATION_SELECTED_DAILY,
+    )
+
+    override fun fireImageGenerationDeselected() = fireCountAndDaily(
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_IMAGE_GENERATION_DESELECTED_COUNT,
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_IMAGE_GENERATION_DESELECTED_DAILY,
+    )
+
+    override fun fireImageGenerationSubmitted() = fireCountAndDaily(
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_IMAGE_GENERATION_SUBMITTED_COUNT,
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_IMAGE_GENERATION_SUBMITTED_DAILY,
+    )
+
+    override fun fireWebSearchSelected() = fireCountAndDaily(
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_WEB_SEARCH_SELECTED_COUNT,
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_WEB_SEARCH_SELECTED_DAILY,
+    )
+
+    override fun fireWebSearchDeselected() = fireCountAndDaily(
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_WEB_SEARCH_DESELECTED_COUNT,
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_WEB_SEARCH_DESELECTED_DAILY,
+    )
+
+    override fun fireWebSearchSubmitted() = fireCountAndDaily(
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_WEB_SEARCH_SUBMITTED_COUNT,
+        DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_WEB_SEARCH_SUBMITTED_DAILY,
+    )
+
+    override fun firePromptSubmitted(
+        selectedTool: String,
+        modelId: String?,
+        reasoningEffort: String?,
+        hasImageAttachment: Boolean,
+        hasFileAttachment: Boolean,
+        hasText: Boolean,
+    ) {
+        val params = buildMap {
+            put(DuckChatPixelParameters.SELECTED_TOOL, selectedTool)
+            modelId?.let { put(DuckChatPixelParameters.MODEL_ID, it) }
+            reasoningEffort?.let { put(DuckChatPixelParameters.REASONING_EFFORT, it) }
+            put(DuckChatPixelParameters.HAS_IMAGE_ATTACHMENT, hasImageAttachment.toString())
+            put(DuckChatPixelParameters.HAS_FILE_ATTACHMENT, hasFileAttachment.toString())
+            put(DuckChatPixelParameters.HAS_TEXT, hasText.toString())
+        }
+        fireCountAndDaily(
+            DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_PROMPT_SUBMITTED_COUNT,
+            DuckChatPixelName.DUCK_CHAT_UNIFIED_INPUT_PROMPT_SUBMITTED_DAILY,
+            params,
+        )
     }
 }
 
