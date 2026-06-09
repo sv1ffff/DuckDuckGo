@@ -75,7 +75,7 @@ class BrandDesignUpdateBubbleCtaTest {
 
         cta.applyWavingDaxState(container, showsWavingDax)
 
-        verify(showsWavingDax).configureWavingDax(dax, mockDeviceInfo)
+        verify(showsWavingDax).configureWavingDax(dax, mockDeviceInfo, true)
         verify(dax).isInvisible = true
     }
 
@@ -87,7 +87,7 @@ class BrandDesignUpdateBubbleCtaTest {
 
         cta.applyWavingDaxState(container, showsWavingDax)
 
-        verify(showsWavingDax).configureWavingDax(dax, mockDeviceInfo)
+        verify(showsWavingDax).configureWavingDax(dax, mockDeviceInfo, false)
         verify(dax).progress = 0f
         verify(dax).alpha = 1f
         verify(dax).isVisible = true
@@ -242,6 +242,51 @@ class BrandDesignUpdateBubbleCtaTest {
         )
     }
 
+    @Test
+    fun configureWavingDax_improvementsEnabled_bottomAnchorsAndLeavesHeightToFitPath() {
+        val dax: LottieAnimationView = mock()
+        val lp = stubDaxForFormFactor(dax, FormFactor.PHONE)
+        val cta = WavingDaxBubbleCta()
+
+        cta.configureWavingDax(dax, mockDeviceInfo, improvementsEnabled = true)
+
+        verify(dax).translationY = 28f
+        assertEquals(ConstraintLayout.LayoutParams.PARENT_ID, lp.bottomToBottom)
+        assertEquals(ConstraintLayout.LayoutParams.UNSET, lp.topToBottom)
+        assertEquals(0, lp.height)
+    }
+
+    @Test
+    fun configureWavingDax_improvementsDisabled_anchorsTopToParent() {
+        val dax: LottieAnimationView = mock()
+        val lp = stubDaxForFormFactor(dax, FormFactor.PHONE)
+        val cta = WavingDaxBubbleCta()
+
+        cta.configureWavingDax(dax, mockDeviceInfo, improvementsEnabled = false)
+
+        assertEquals(ConstraintLayout.LayoutParams.PARENT_ID, lp.topToBottom)
+    }
+
+    @Test
+    fun subscriptionConfigureWavingDax_improvementsDisabled_keepsLegacyTranslationAnchorAndHeight() {
+        val dax: LottieAnimationView = mock()
+        val lp = stubDaxForFormFactor(dax, FormFactor.PHONE)
+        val cta = DaxSubscriptionBrandDesignUpdateBubbleCta(
+            onboardingStore = onboardingStore,
+            appInstallStore = appInstallStore,
+            isLightTheme = true,
+            deviceInfo = mockDeviceInfo,
+            isFreeTrialCopy = false,
+            onboardingImprovementsEnabled = true,
+        )
+
+        cta.configureWavingDax(dax, mockDeviceInfo, improvementsEnabled = false)
+
+        verify(dax).translationY = -288f
+        assertEquals(ConstraintLayout.LayoutParams.PARENT_ID, lp.topToBottom)
+        assertEquals(267, lp.height)
+    }
+
     private fun stubDaxForFormFactor(
         dax: LottieAnimationView,
         formFactor: FormFactor,
@@ -298,7 +343,8 @@ class BrandDesignUpdateBubbleCtaTest {
             rotationDegrees = 0f,
             translationXDp = -40f,
             translationYDp = -150f,
-            heightDp = 178f,
+            minHeightDp = 178f,
+            maxHeightDp = 178f,
             anchorToCardOnTablet = true,
         )
 
