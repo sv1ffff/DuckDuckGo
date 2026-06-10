@@ -18,12 +18,12 @@ package com.duckduckgo.app.browser
 
 import android.net.Uri
 import com.duckduckgo.app.pixels.remoteconfig.AndroidBrowserConfigFeature
-import com.duckduckgo.app.referral.AppReferrerDataStore
 import com.duckduckgo.app.statistics.store.StatisticsDataStore
 import com.duckduckgo.common.utils.AppUrl.ParamKey
 import com.duckduckgo.common.utils.AppUrl.ParamValue
 import com.duckduckgo.duckchat.api.DuckChat
 import com.duckduckgo.experiments.api.VariantManager
+import com.duckduckgo.referral.api.AppReferrerDataStore
 import com.duckduckgo.settings.api.SerpSettingsFeature
 import logcat.logcat
 

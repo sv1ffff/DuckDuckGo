@@ -23,18 +23,12 @@ import com.duckduckgo.app.di.AppCoroutineScope
 import com.duckduckgo.browser.api.referrer.AppReferrer
 import com.duckduckgo.common.utils.DispatcherProvider
 import com.duckduckgo.di.scopes.AppScope
+import com.duckduckgo.referral.api.AppReferrerDataStore
 import com.squareup.anvil.annotations.ContributesBinding
 import dagger.SingleInstanceIn
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-interface AppReferrerDataStore {
-    var referrerCheckedPreviously: Boolean
-    var campaignSuffix: String?
-    var installedFromEuAuction: Boolean
-    var utmOriginAttributeCampaign: String?
-}
 
 @ContributesBinding(
     scope = AppScope::class,

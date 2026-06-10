@@ -16,10 +16,10 @@
 
 package com.duckduckgo.app.di
 
-import com.duckduckgo.app.referral.*
 import com.duckduckgo.app.statistics.AtbInitializerListener
 import com.duckduckgo.di.scopes.AppScope
 import com.duckduckgo.referral.PlayStoreAppReferrerStateListener
+import com.duckduckgo.referral.api.AppInstallationReferrerStateListener
 import com.squareup.anvil.annotations.ContributesTo
 import dagger.Module
 import dagger.Provides

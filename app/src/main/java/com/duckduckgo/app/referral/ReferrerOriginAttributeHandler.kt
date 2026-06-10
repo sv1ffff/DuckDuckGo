@@ -17,6 +17,7 @@
 package com.duckduckgo.app.referral
 
 import com.duckduckgo.di.scopes.AppScope
+import com.duckduckgo.referral.api.AppReferrerDataStore
 import com.duckduckgo.verifiedinstallation.installsource.VerificationCheckPlayStoreInstall
 import com.squareup.anvil.annotations.ContributesBinding
 import logcat.LogPriority.INFO

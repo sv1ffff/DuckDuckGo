@@ -5,6 +5,7 @@ import com.duckduckgo.app.referral.ReferrerOriginAttributeHandlerImpl.Companion.
 import com.duckduckgo.app.statistics.pixels.Pixel
 import com.duckduckgo.appbuildconfig.api.AppBuildConfig
 import com.duckduckgo.common.test.CoroutineTestRule
+import com.duckduckgo.referral.api.AppReferrerDataStore
 import com.duckduckgo.verifiedinstallation.installsource.VerificationCheckPlayStoreInstall
 import org.junit.Before
 import org.junit.Rule

@@ -16,11 +16,12 @@
 
 package com.duckduckgo.app.referral
 
-import com.duckduckgo.app.referral.ParsedReferrerResult.CampaignReferrerFound
-import com.duckduckgo.app.referral.ParsedReferrerResult.EuAuctionBrowserChoiceReferrerFound
-import com.duckduckgo.app.referral.ParsedReferrerResult.EuAuctionSearchChoiceReferrerFound
-import com.duckduckgo.app.referral.ParsedReferrerResult.ReferrerNotFound
 import com.duckduckgo.di.scopes.AppScope
+import com.duckduckgo.referral.api.ParsedReferrerResult
+import com.duckduckgo.referral.api.ParsedReferrerResult.CampaignReferrerFound
+import com.duckduckgo.referral.api.ParsedReferrerResult.EuAuctionBrowserChoiceReferrerFound
+import com.duckduckgo.referral.api.ParsedReferrerResult.EuAuctionSearchChoiceReferrerFound
+import com.duckduckgo.referral.api.ParsedReferrerResult.ReferrerNotFound
 import com.squareup.anvil.annotations.ContributesBinding
 import logcat.LogPriority.INFO
 import logcat.LogPriority.VERBOSE
@@ -122,26 +123,4 @@ class QueryParamReferrerParser @Inject constructor(
         private const val INSTALLATION_SEARCH_CHOICE_SOURCE_EU_AUCTION_VALUE = "eea-search-choice"
         private const val INSTALLATION_BROWSER_CHOICE_SOURCE_EU_AUCTION_VALUE = "eea-browser-choice"
     }
-}
-
-sealed class ParsedReferrerResult(open val fromCache: Boolean = false) {
-    data class EuAuctionSearchChoiceReferrerFound(override val fromCache: Boolean = false) : ParsedReferrerResult(fromCache)
-    data class EuAuctionBrowserChoiceReferrerFound(override val fromCache: Boolean = false) : ParsedReferrerResult(fromCache)
-    data class CampaignReferrerFound(
-        val campaignSuffix: String,
-        override val fromCache: Boolean = false,
-    ) : ParsedReferrerResult(fromCache)
-
-    data class ReferrerNotFound(override val fromCache: Boolean = false) : ParsedReferrerResult(fromCache)
-    data class ParseFailure(val reason: ParseFailureReason) : ParsedReferrerResult()
-    data object ReferrerInitialising : ParsedReferrerResult()
-}
-
-sealed class ParseFailureReason {
-    data object FeatureNotSupported : ParseFailureReason()
-    data object ServiceUnavailable : ParseFailureReason()
-    data object DeveloperError : ParseFailureReason()
-    data object ServiceDisconnected : ParseFailureReason()
-    data object UnknownError : ParseFailureReason()
-    data object ReferralServiceUnavailable : ParseFailureReason()
 }
