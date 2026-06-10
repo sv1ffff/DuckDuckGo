@@ -16,39 +16,38 @@
 
 package com.duckduckgo.app.onboarding
 
-import com.duckduckgo.app.onboarding.store.OnboardingPath
-import com.duckduckgo.app.onboarding.store.ReferrerOnboardingDataStore
-import org.junit.Assert.assertEquals
+import com.duckduckgo.app.onboarding.store.OnboardingStore
 import org.junit.Test
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 
 class ReferrerOnboardingParserPluginTest {
 
-    private val fakeStore = object : ReferrerOnboardingDataStore {
-        override var onboardingPath: OnboardingPath = OnboardingPath.NONE
-    }
-    private val plugin = ReferrerOnboardingParserPlugin(fakeStore)
+    private val onboardingStore: OnboardingStore = mock()
+    private val plugin = ReferrerOnboardingParserPlugin(onboardingStore)
 
     @Test
-    fun whenOnboardingAiThenPathIsAi() {
+    fun whenOnboardingAiThenCustomAiOnboardingFlowSet() {
         plugin.process(listOf("origin=funnel_playstore", "onboarding=ai"))
-        assertEquals(OnboardingPath.AI, fakeStore.onboardingPath)
+        verify(onboardingStore).setCustomAiOnboardingFlow()
     }
 
     @Test
-    fun whenOnboardingMissingThenPathIsNone() {
+    fun whenOnboardingMissingThenCustomAiOnboardingFlowNotSet() {
         plugin.process(listOf("origin=funnel_playstore"))
-        assertEquals(OnboardingPath.NONE, fakeStore.onboardingPath)
+        verify(onboardingStore, never()).setCustomAiOnboardingFlow()
     }
 
     @Test
-    fun whenOnboardingEmptyThenPathIsNone() {
+    fun whenOnboardingEmptyThenCustomAiOnboardingFlowNotSet() {
         plugin.process(listOf("onboarding="))
-        assertEquals(OnboardingPath.NONE, fakeStore.onboardingPath)
+        verify(onboardingStore, never()).setCustomAiOnboardingFlow()
     }
 
     @Test
-    fun whenOnboardingUnrecognisedThenPathIsNone() {
+    fun whenOnboardingUnrecognisedThenCustomAiOnboardingFlowNotSet() {
         plugin.process(listOf("onboarding=somethingelse"))
-        assertEquals(OnboardingPath.NONE, fakeStore.onboardingPath)
+        verify(onboardingStore, never()).setCustomAiOnboardingFlow()
     }
 }

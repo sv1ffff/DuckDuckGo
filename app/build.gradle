@@ -657,7 +657,6 @@ dependencies {
     androidTestImplementation project(':common-test')
     testImplementation project(':common-test')
     testImplementation project(':feature-toggles-test')
-    testImplementation project(':data-store-test')
     androidTestImplementation project(':feature-toggles-test')
     lintChecks project(":lint-rules")
 

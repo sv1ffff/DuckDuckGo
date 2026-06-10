@@ -221,8 +221,12 @@ class OnboardingStoreImpl @Inject constructor(
         return preferences.getBoolean(KEY_DUCK_AI_ONBOARDING_FLOW, false)
     }
 
+    override fun setCustomAiOnboardingFlow() {
+        preferences.edit { putBoolean(KEY_CUSTOM_AI_ONBOARDING_FLOW, true) }
+    }
+
     override fun isCustomAiOnboardingFlow(): Boolean {
-        return false
+        return preferences.getBoolean(KEY_CUSTOM_AI_ONBOARDING_FLOW, false)
     }
 
     companion object {
@@ -231,5 +235,6 @@ class OnboardingStoreImpl @Inject constructor(
         private const val KEY_INPUT_SCREEN_SELECTION = "inputScreenSelection"
         private const val KEY_INPUT_SCREEN_SELECTION_OVERRIDDEN_BY_USER = "inputScreenSelectionOverriddenByUser"
         private const val KEY_DUCK_AI_ONBOARDING_FLOW = "duckAiOnboardingFlow"
+        private const val KEY_CUSTOM_AI_ONBOARDING_FLOW = "customAiOnboardingFlow"
     }
 }

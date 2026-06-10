@@ -16,8 +16,7 @@
 
 package com.duckduckgo.app.onboarding
 
-import com.duckduckgo.app.onboarding.store.OnboardingPath
-import com.duckduckgo.app.onboarding.store.ReferrerOnboardingDataStore
+import com.duckduckgo.app.onboarding.store.OnboardingStore
 import com.duckduckgo.di.scopes.AppScope
 import com.duckduckgo.referral.api.ReferrerParserPlugin
 import com.squareup.anvil.annotations.ContributesMultibinding
@@ -28,7 +27,7 @@ import javax.inject.Inject
 
 @ContributesMultibinding(AppScope::class)
 class ReferrerOnboardingParserPlugin @Inject constructor(
-    private val onboardingDataStore: ReferrerOnboardingDataStore,
+    private val onboardingStore: OnboardingStore,
 ) : ReferrerParserPlugin {
 
     override fun process(referrerParts: List<String>) {
@@ -37,15 +36,11 @@ class ReferrerOnboardingParserPlugin @Inject constructor(
             val rawValue = referrerParts
                 .firstOrNull { it.startsWith("$ONBOARDING_KEY=") }
                 ?.removePrefix("$ONBOARDING_KEY=")
-            val path = rawValue.toOnboardingPath()
-            logcat(INFO) { "Onboarding referrer path resolved to: $path" }
-            onboardingDataStore.onboardingPath = path
+            if (rawValue == AI_VALUE) {
+                logcat(INFO) { "Custom AI onboarding referral detected" }
+                onboardingStore.setCustomAiOnboardingFlow()
+            }
         }
-    }
-
-    private fun String?.toOnboardingPath(): OnboardingPath = when (this) {
-        AI_VALUE -> OnboardingPath.AI
-        else -> OnboardingPath.NONE
     }
 
     companion object {
