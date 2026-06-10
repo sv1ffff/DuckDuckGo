@@ -16,27 +16,13 @@
 
 package com.duckduckgo.app.onboarding.store
 
-import android.content.Context
-import androidx.core.content.edit
-import androidx.test.core.app.ApplicationProvider
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.duckduckgo.app.onboarding.store.ReferrerOnboardingDataStoreImpl.Companion.FILENAME
+import com.duckduckgo.data.store.api.FakeSharedPreferencesProvider
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
 class ReferrerOnboardingDataStoreTest {
 
-    private val context = ApplicationProvider.getApplicationContext<Context>()
-    private lateinit var store: ReferrerOnboardingDataStoreImpl
-
-    @Before
-    fun setup() {
-        context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE).edit { clear() }
-        store = ReferrerOnboardingDataStoreImpl(context)
-    }
+    private val store = ReferrerOnboardingDataStoreImpl(FakeSharedPreferencesProvider())
 
     @Test
     fun whenNothingStoredThenDefaultIsNone() {

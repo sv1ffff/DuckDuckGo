@@ -16,9 +16,9 @@
 
 package com.duckduckgo.app.onboarding.store
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.duckduckgo.data.store.api.SharedPreferencesProvider
 import com.duckduckgo.di.scopes.AppScope
 import com.squareup.anvil.annotations.ContributesBinding
 import dagger.SingleInstanceIn
@@ -31,7 +31,7 @@ interface ReferrerOnboardingDataStore {
 @ContributesBinding(AppScope::class)
 @SingleInstanceIn(AppScope::class)
 class ReferrerOnboardingDataStoreImpl @Inject constructor(
-    private val context: Context,
+    private val sharedPreferencesProvider: SharedPreferencesProvider,
 ) : ReferrerOnboardingDataStore {
 
     override var onboardingPath: OnboardingPath
@@ -41,7 +41,7 @@ class ReferrerOnboardingDataStoreImpl @Inject constructor(
         }
         set(value) = preferences.edit(true) { putString(KEY_ONBOARDING_PATH, value.name) }
 
-    private val preferences: SharedPreferences by lazy { context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE) }
+    private val preferences: SharedPreferences by lazy { sharedPreferencesProvider.getSharedPreferences(FILENAME) }
 
     companion object {
         const val FILENAME = "com.duckduckgo.app.onboarding.referral"

@@ -16,12 +16,12 @@
 
 package com.duckduckgo.referral.impl
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.duckduckgo.app.di.AppCoroutineScope
 import com.duckduckgo.browser.api.referrer.AppReferrer
 import com.duckduckgo.common.utils.DispatcherProvider
+import com.duckduckgo.data.store.api.SharedPreferencesProvider
 import com.duckduckgo.di.scopes.AppScope
 import com.duckduckgo.referral.api.AppReferrerDataStore
 import com.squareup.anvil.annotations.ContributesBinding
@@ -40,7 +40,7 @@ import javax.inject.Inject
 )
 @SingleInstanceIn(AppScope::class)
 class AppReferrerSharedPreferences @Inject constructor(
-    private val context: Context,
+    private val sharedPreferencesProvider: SharedPreferencesProvider,
     @AppCoroutineScope private val coroutineScope: CoroutineScope,
     private val dispatcherProvider: DispatcherProvider,
 ) : AppReferrerDataStore, AppReferrer {
@@ -69,7 +69,7 @@ class AppReferrerSharedPreferences @Inject constructor(
         get() = preferences.getBoolean(KEY_INSTALLED_FROM_EU_AUCTION, false)
         set(value) = preferences.edit(true) { putBoolean(KEY_INSTALLED_FROM_EU_AUCTION, value) }
 
-    private val preferences: SharedPreferences by lazy { context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE) }
+    private val preferences: SharedPreferences by lazy { sharedPreferencesProvider.getSharedPreferences(FILENAME) }
 
     companion object {
         const val FILENAME = "com.duckduckgo.app.referral"
