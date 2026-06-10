@@ -52,8 +52,8 @@ import com.duckduckgo.common.utils.playstore.PlayStoreAndroidUtils.Companion.PLA
 import com.duckduckgo.common.utils.playstore.PlayStoreAndroidUtils.Companion.PLAY_STORE_REFERRAL_SERVICE
 import com.duckduckgo.di.scopes.AppScope
 import com.duckduckgo.experiments.api.VariantManager
-import com.duckduckgo.experiments.impl.VariantManagerImpl.Companion.RESERVED_EU_BROWSER_CHOICE_AUCTION_VARIANT
-import com.duckduckgo.experiments.impl.VariantManagerImpl.Companion.RESERVED_EU_SEARCH_CHOICE_AUCTION_VARIANT
+import com.duckduckgo.experiments.api.VariantManager.Companion.RESERVED_EU_BROWSER_CHOICE_AUCTION_VARIANT
+import com.duckduckgo.experiments.api.VariantManager.Companion.RESERVED_EU_SEARCH_CHOICE_AUCTION_VARIANT
 import dagger.SingleInstanceIn
 import kotlinx.coroutines.delay
 import logcat.LogPriority.ERROR
