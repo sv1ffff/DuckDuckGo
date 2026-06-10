@@ -33,6 +33,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.doOnNextLayout
 import androidx.core.view.isNotEmpty
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -314,7 +315,10 @@ class InputScreenFragment : DuckDuckGoFragment(R.layout.fragment_input_screen) {
         configureLogoAnimation()
         configureKeyboardListener()
 
-        val launchOnChat = if (duckChatFeature.rememberTogglePosition().isEnabled() && params?.isNewTab == true) {
+        val launchOnChat = if (params?.showDuckAiOnboardingEndCta == true) {
+            // During an onboarding flow, the launchOnChat flag takes precedence over the rememberTogglePosition setting.
+            params.launchOnChat
+        } else if (duckChatFeature.rememberTogglePosition().isEnabled() && params?.isNewTab == true) {
             viewModel.getNewTabTogglePosition() == DefaultTogglePosition.DUCK_AI
         } else {
             params?.launchOnChat ?: false
@@ -327,7 +331,7 @@ class InputScreenFragment : DuckDuckGoFragment(R.layout.fragment_input_screen) {
         updateMenuIconButton()
 
         if (params?.showDuckAiOnboardingEndCta == true) {
-            showDuckAiEndCta()
+            showDuckAiEndCta(useCustomAiOnboardingFlowCopy = params.launchOnChat)
         }
 
         requireActivity().onBackPressedDispatcher.addCallback(
@@ -966,7 +970,7 @@ class InputScreenFragment : DuckDuckGoFragment(R.layout.fragment_input_screen) {
         binding.chatSuggestionsBottomFadeContainer.getChildAt(0)?.invalidate()
     }
 
-    private fun showDuckAiEndCta() {
+    private fun showDuckAiEndCta(useCustomAiOnboardingFlowCopy: Boolean) {
         duckAiEndCtaVisible = true
         duckAiEndCtaOkClicked = false
         binding.ddgLogoContainer.isVisible = false
@@ -986,7 +990,12 @@ class InputScreenFragment : DuckDuckGoFragment(R.layout.fragment_input_screen) {
         binding.onboardingBackground.setImageResource(backgroundRes)
         binding.onboardingBackground.isVisible = true
 
-        val descriptionHtml = Html.fromHtml(getString(R.string.duckAiEndCtaDescription), Html.FROM_HTML_MODE_COMPACT)
+        val description = if (useCustomAiOnboardingFlowCopy) {
+            getString(R.string.duckAiEndCtaDescriptionCustomAi)
+        } else {
+            getString(R.string.duckAiEndCtaDescription)
+        }
+        val descriptionHtml = Html.fromHtml(description, Html.FROM_HTML_MODE_COMPACT)
         binding.duckAiEndCta.duckAiEndCtaDescription.text =
             requireContext().appendIconToText(descriptionHtml, CommonR.drawable.ic_ai_chat_16)
 
@@ -998,6 +1007,11 @@ class InputScreenFragment : DuckDuckGoFragment(R.layout.fragment_input_screen) {
             .setDuration(OVERLAY_ANIMATION_DURATION)
             .setStartDelay(400)
             .start()
+
+        // DaxButtonPrimary (a MaterialButton) positions its text during onMeasure. The CTA is shown on the same frame the
+        // ViewPager switches to the chat page, so the button's first layout pass can land at a transient width and leave its text
+        // start-aligned instead of centered. Force one more measure once the width is final so the text re-centers.
+        binding.duckAiEndCta.duckAiEndCtaOkButton.doOnNextLayout { it.requestLayout() }
 
         binding.duckAiEndCta.duckAiEndCtaOkButton.setOnClickListener {
             duckAiEndCtaOkClicked = true

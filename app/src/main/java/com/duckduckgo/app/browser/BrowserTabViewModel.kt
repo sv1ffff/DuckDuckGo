@@ -1044,7 +1044,8 @@ class BrowserTabViewModel @Inject constructor(
                             val hasPendingOnboardingPromo = ctaViewModel.isPromoOnboardingDialogShowing()
                             if (!hasPendingOnboardingPromo) {
                                 val showDuckAiEndCta = ctaViewModel.prepareAndMarkDuckAiEndCtaForInputScreen()
-                                command.value = LaunchInputScreen(showDuckAiEndCta = showDuckAiEndCta)
+                                val launchOnChat = showDuckAiEndCta && onboardingStore.isCustomAiOnboardingFlow()
+                                command.value = LaunchInputScreen(showDuckAiEndCta = showDuckAiEndCta, launchOnChat = launchOnChat)
                             }
                         }
                     }

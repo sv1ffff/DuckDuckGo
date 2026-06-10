@@ -21,8 +21,9 @@ import com.duckduckgo.app.browser.defaultbrowsing.DefaultBrowserDetector
 import com.duckduckgo.app.browser.omnibar.OmnibarType
 import com.duckduckgo.app.global.DefaultRoleBrowserDialog
 import com.duckduckgo.app.global.install.AppInstallStore
-import com.duckduckgo.app.onboarding.CustomDuckAiOnboardingFeature
 import com.duckduckgo.app.onboarding.DuckAiOnboardingExperimentManager
+import com.duckduckgo.app.onboarding.orchestrator.NewUserBrowserActivityAction
+import com.duckduckgo.app.onboarding.orchestrator.NewUserBrowserActivityStep
 import com.duckduckgo.app.onboarding.orchestrator.NewUserOnboardingActivityDialog
 import com.duckduckgo.app.onboarding.orchestrator.NewUserOnboardingActivityStep
 import com.duckduckgo.app.onboarding.orchestrator.NewUserOnboardingEvent
@@ -41,7 +42,6 @@ import com.duckduckgo.appbuildconfig.api.AppBuildConfig
 import com.duckduckgo.common.test.CoroutineTestRule
 import com.duckduckgo.duckchat.api.DuckChat
 import com.duckduckgo.duckchat.impl.inputscreen.wideevents.InputScreenOnboardingWideEvent
-import com.duckduckgo.feature.toggles.api.Toggle
 import com.duckduckgo.onboarding.api.LinearOnboardingEvent
 import com.duckduckgo.onboarding.api.LinearOnboardingOrchestrator
 import com.duckduckgo.onboarding.api.LinearOnboardingPlan
@@ -70,8 +70,6 @@ class BrandDesignUpdatePageViewModelOrchestratorTest {
     private val pixel: Pixel = mock()
     private val onboardingStore: OnboardingStore = mock()
     private val defaultRoleBrowserDialog: DefaultRoleBrowserDialog = mock()
-    private val customDuckAiOnboardingFeature: CustomDuckAiOnboardingFeature = mock()
-    private val customAiToggle: Toggle = mock()
     private val fakeOrchestrator = FakeOrchestrator()
 
     private class FakeOrchestrator : LinearOnboardingOrchestrator {
@@ -86,17 +84,28 @@ class BrandDesignUpdatePageViewModelOrchestratorTest {
 
     @Before
     fun setup() {
-        whenever(customDuckAiOnboardingFeature.introAnimation()).thenReturn(customAiToggle)
-        whenever(customAiToggle.isEnabled()).thenReturn(false)
         whenever(onboardingStore.getSearchOptions()).thenReturn(emptyList())
         whenever(onboardingStore.getChatSuggestions()).thenReturn(emptyList())
     }
 
-    private fun step(dialog: NewUserOnboardingActivityDialog, id: String = "step"): LinearOnboardingStep =
-        NewUserOnboardingActivityStep(id = id, transition = { LinearOnboardingTransition.Stay }, resolveDialog = { dialog })
+    private fun step(
+        dialog: NewUserOnboardingActivityDialog,
+        id: String = "step",
+        showsStepIndicator: Boolean = false,
+    ): LinearOnboardingStep =
+        NewUserOnboardingActivityStep(
+            id = id,
+            showsStepIndicator = showsStepIndicator,
+            transition = { LinearOnboardingTransition.Stay },
+            resolveDialog = { dialog },
+        )
 
-    private fun inProgressWith(dialog: NewUserOnboardingActivityDialog, id: String = "step"): InProgress {
-        val plan = LinearOnboardingPlan(id = "test_plan", steps = listOf(step(dialog, id)))
+    private fun inProgressWith(
+        dialog: NewUserOnboardingActivityDialog,
+        id: String = "step",
+        showsStepIndicator: Boolean = false,
+    ): InProgress {
+        val plan = LinearOnboardingPlan(id = "test_plan", steps = listOf(step(dialog, id, showsStepIndicator)))
         return InProgress(rootPlanId = NewUserOnboardingPlanProvider.ROOT_PLAN_ID, currentPlan = plan, currentStepIndex = 0)
     }
 
@@ -105,9 +114,14 @@ class BrandDesignUpdatePageViewModelOrchestratorTest {
     private fun createViewModelAt(
         startingDialog: NewUserOnboardingActivityDialog,
         id: String = "step",
+        showsStepIndicator: Boolean = false,
     ): BrandDesignUpdatePageViewModel {
-        fakeOrchestrator.stateFlow.value = inProgressWith(startingDialog, id)
-        return BrandDesignUpdatePageViewModel(
+        fakeOrchestrator.stateFlow.value = inProgressWith(startingDialog, id, showsStepIndicator)
+        return buildViewModel()
+    }
+
+    private fun buildViewModel(): BrandDesignUpdatePageViewModel =
+        BrandDesignUpdatePageViewModel(
             defaultRoleBrowserDialog = defaultRoleBrowserDialog,
             context = mock(),
             pixel = pixel,
@@ -125,10 +139,8 @@ class BrandDesignUpdatePageViewModelOrchestratorTest {
             widgetCapabilities = mock<WidgetCapabilities>(),
             syncAutoRestore = mock(),
             quickSetupPixelSender = mock(),
-            customDuckAiOnboardingFeature = customDuckAiOnboardingFeature,
             orchestrator = fakeOrchestrator,
         )
-    }
 
     @Test
     fun `when state is initial then view state shows initial and fires shown pixel`() = runTest {
@@ -270,6 +282,58 @@ class BrandDesignUpdatePageViewModelOrchestratorTest {
     }
 
     @Test
+    fun `when custom ai onboarding flow then view state enables custom ai flow`() = runTest {
+        whenever(onboardingStore.isCustomAiOnboardingFlow()).thenReturn(true)
+        val testee = createViewModelAt(NewUserOnboardingActivityDialog.Initial)
+        advanceUntilIdle()
+
+        assertTrue(testee.viewState.value.isCustomAiOnboardingFlow)
+    }
+
+    @Test
+    fun `when ai comparison chart then view state shows ai comparison chart`() = runTest {
+        val testee = createViewModelAt(NewUserOnboardingActivityDialog.AiComparisonChart, id = "ai_comparison_chart")
+        advanceUntilIdle()
+
+        assertEquals(PreOnboardingDialogType.AI_COMPARISON_CHART, testee.viewState.value.currentDialog)
+    }
+
+    @Test
+    fun `when ai comparison chart continue then emits continue clicked`() = runTest {
+        val testee = createViewModelAt(NewUserOnboardingActivityDialog.AiComparisonChart, id = "ai_comparison_chart")
+        advanceUntilIdle()
+
+        testee.onPrimaryCtaClicked()
+        advanceUntilIdle()
+
+        assertTrue(fakeOrchestrator.events.contains(NewUserOnboardingEvent.ContinueClicked))
+    }
+
+    @Test
+    fun `when input screen preview then view state derives its step number from plan position`() = runTest {
+        // Two indicator steps with the preview 2nd, so the VM derives "2 of 2" from plan position (not the dialog).
+        val plan = LinearOnboardingPlan(
+            id = NewUserOnboardingPlanProvider.ROOT_PLAN_ID,
+            steps = listOf(
+                step(NewUserOnboardingActivityDialog.AiComparisonChart, id = "ai_comparison_chart", showsStepIndicator = true),
+                step(
+                    NewUserOnboardingActivityDialog.InputScreenPreview(isSearchDefault = false),
+                    id = "input_screen_preview",
+                    showsStepIndicator = true,
+                ),
+            ),
+        )
+        fakeOrchestrator.stateFlow.value =
+            InProgress(rootPlanId = NewUserOnboardingPlanProvider.ROOT_PLAN_ID, currentPlan = plan, currentStepIndex = 1)
+        val testee = buildViewModel()
+        advanceUntilIdle()
+
+        assertEquals(PreOnboardingDialogType.INPUT_SCREEN_PREVIEW, testee.viewState.value.currentDialog)
+        assertEquals(2, testee.viewState.value.currentPageNumber)
+        assertEquals(2, testee.viewState.value.maxPageCount)
+    }
+
+    @Test
     fun `when demo query submitted then forwards event and completed result drives finish`() = runTest {
         val testee = createViewModelAt(NewUserOnboardingActivityDialog.InputScreenPreview(isSearchDefault = false))
         testee.commands.test {
@@ -285,5 +349,26 @@ class BrandDesignUpdatePageViewModelOrchestratorTest {
             assertEquals(BrandDesignUpdatePageViewModel.Command.FinishAndSubmitChatPrompt(prompt = "cats"), awaitItem())
         }
         assertTrue(fakeOrchestrator.events.contains(NewUserOnboardingEvent.InputDemoQuerySubmitted(query = "cats", isChat = true)))
+    }
+
+    private fun createViewModelAtBrowserStep(): BrandDesignUpdatePageViewModel {
+        val browserStep = NewUserBrowserActivityStep(
+            id = "duck_ai_demo",
+            transition = { LinearOnboardingTransition.Stay },
+            resolveAction = { NewUserBrowserActivityAction.RunDuckAiOnboardingDemo("x") },
+        )
+        val browserPlan = LinearOnboardingPlan(id = "test_plan", steps = listOf(browserStep))
+        fakeOrchestrator.stateFlow.value =
+            InProgress(rootPlanId = NewUserOnboardingPlanProvider.ROOT_PLAN_ID, currentPlan = browserPlan, currentStepIndex = 0)
+        return buildViewModel()
+    }
+
+    @Test
+    fun `when current step hosted by browser activity then hands off to browser`() = runTest {
+        val testee = createViewModelAtBrowserStep()
+
+        testee.commands.test {
+            assertEquals(BrandDesignUpdatePageViewModel.Command.HandOffToBrowserActivity, awaitItem())
+        }
     }
 }
