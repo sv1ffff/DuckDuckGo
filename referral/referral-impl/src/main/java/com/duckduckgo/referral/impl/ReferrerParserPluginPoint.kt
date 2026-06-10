@@ -16,6 +16,13 @@
 
 package com.duckduckgo.referral.impl
 
-internal object ScaffoldProbe {
-    fun ok(): Boolean = true
-}
+import com.duckduckgo.anvil.annotations.ContributesPluginPoint
+import com.duckduckgo.di.scopes.AppScope
+import com.duckduckgo.referral.api.ReferrerParserPlugin
+
+@ContributesPluginPoint(
+    scope = AppScope::class,
+    boundType = ReferrerParserPlugin::class,
+)
+@Suppress("unused")
+interface ReferrerParserPluginPoint

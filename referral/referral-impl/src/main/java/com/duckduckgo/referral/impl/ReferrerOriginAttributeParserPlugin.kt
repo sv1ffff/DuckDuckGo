@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-package com.duckduckgo.app.referral
+package com.duckduckgo.referral.impl
 
 import com.duckduckgo.di.scopes.AppScope
 import com.duckduckgo.referral.api.AppReferrerDataStore
+import com.duckduckgo.referral.api.ReferrerParserPlugin
 import com.duckduckgo.verifiedinstallation.installsource.VerificationCheckPlayStoreInstall
-import com.squareup.anvil.annotations.ContributesBinding
+import com.squareup.anvil.annotations.ContributesMultibinding
 import logcat.LogPriority.INFO
 import logcat.LogPriority.VERBOSE
 import logcat.logcat
 import javax.inject.Inject
 
-interface ReferrerOriginAttributeHandler {
-    fun process(referrerParts: List<String>)
-}
-
-@ContributesBinding(AppScope::class)
-class ReferrerOriginAttributeHandlerImpl @Inject constructor(
+@ContributesMultibinding(AppScope::class)
+class ReferrerOriginAttributeParserPlugin @Inject constructor(
     private val appReferrerDataStore: AppReferrerDataStore,
     private val playStoreInstallChecker: VerificationCheckPlayStoreInstall,
-) : ReferrerOriginAttributeHandler {
+) : ReferrerParserPlugin {
 
     override fun process(referrerParts: List<String>) {
         runCatching {

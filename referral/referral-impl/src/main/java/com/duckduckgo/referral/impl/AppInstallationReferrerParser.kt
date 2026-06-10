@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 DuckDuckGo
+ * Copyright (c) 2019 DuckDuckGo
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,8 @@
 
 package com.duckduckgo.referral.impl
 
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import com.duckduckgo.referral.api.ParsedReferrerResult
 
-class ScaffoldProbeTest {
-    @Test
-    fun probeReturnsTrue() {
-        assertTrue(ScaffoldProbe.ok())
-    }
+interface AppInstallationReferrerParser {
+    fun parse(referrer: String): ParsedReferrerResult
 }

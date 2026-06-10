@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.duckduckgo.app.di
+package com.duckduckgo.referral.impl
 
-import com.duckduckgo.app.referral.*
 import com.duckduckgo.app.statistics.AtbInitializerListener
 import com.duckduckgo.di.scopes.AppScope
 import com.duckduckgo.referral.api.AppInstallationReferrerStateListener

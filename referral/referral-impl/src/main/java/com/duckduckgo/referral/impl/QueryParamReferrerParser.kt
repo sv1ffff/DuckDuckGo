@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.duckduckgo.app.referral
+package com.duckduckgo.referral.impl
 
+import com.duckduckgo.common.utils.plugins.PluginPoint
 import com.duckduckgo.di.scopes.AppScope
 import com.duckduckgo.referral.api.ParsedReferrerResult
 import com.duckduckgo.referral.api.ParsedReferrerResult.CampaignReferrerFound
 import com.duckduckgo.referral.api.ParsedReferrerResult.EuAuctionBrowserChoiceReferrerFound
 import com.duckduckgo.referral.api.ParsedReferrerResult.EuAuctionSearchChoiceReferrerFound
 import com.duckduckgo.referral.api.ParsedReferrerResult.ReferrerNotFound
+import com.duckduckgo.referral.api.ReferrerParserPlugin
 import com.squareup.anvil.annotations.ContributesBinding
 import logcat.LogPriority.INFO
 import logcat.LogPriority.VERBOSE
@@ -29,15 +31,10 @@ import logcat.LogPriority.WARN
 import logcat.logcat
 import javax.inject.Inject
 
-interface AppInstallationReferrerParser {
-
-    fun parse(referrer: String): ParsedReferrerResult
-}
-
 @Suppress("SameParameterValue")
 @ContributesBinding(AppScope::class)
 class QueryParamReferrerParser @Inject constructor(
-    private val originAttributeHandler: ReferrerOriginAttributeHandler,
+    private val referrerParserPlugins: PluginPoint<ReferrerParserPlugin>,
 ) : AppInstallationReferrerParser {
 
     override fun parse(referrer: String): ParsedReferrerResult {
@@ -46,8 +43,8 @@ class QueryParamReferrerParser @Inject constructor(
         val referrerParts = splitIntoConstituentParts(referrer)
         if (referrerParts.isEmpty()) return ReferrerNotFound(fromCache = false)
 
-        // processing this doesn't change anything with the ATB-based campaign referrer or EU search/ballot logic
-        originAttributeHandler.process(referrerParts)
+        // side-effecting parsers (origin, onboarding, ...) persist their own data
+        referrerParserPlugins.getPlugins().forEach { it.process(referrerParts) }
 
         val auctionReferrer = extractEuAuctionReferrer(referrerParts)
         if (auctionReferrer is EuAuctionSearchChoiceReferrerFound || auctionReferrer is EuAuctionBrowserChoiceReferrerFound) {

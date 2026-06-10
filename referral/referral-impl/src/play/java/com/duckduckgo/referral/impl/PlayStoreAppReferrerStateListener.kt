@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.duckduckgo.referral
+package com.duckduckgo.referral.impl
 
 import android.content.ComponentName
 import android.content.Context
@@ -29,7 +29,6 @@ import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResp
 import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse.SERVICE_DISCONNECTED
 import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse.SERVICE_UNAVAILABLE
 import com.android.installreferrer.api.InstallReferrerStateListener
-import com.duckduckgo.app.referral.AppInstallationReferrerParser
 import com.duckduckgo.app.statistics.AtbInitializerListener
 import com.duckduckgo.common.utils.playstore.PlayStoreAndroidUtils.Companion.PLAY_STORE_PACKAGE
 import com.duckduckgo.common.utils.playstore.PlayStoreAndroidUtils.Companion.PLAY_STORE_REFERRAL_SERVICE

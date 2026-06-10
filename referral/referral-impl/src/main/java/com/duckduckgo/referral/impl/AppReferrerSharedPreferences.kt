@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.duckduckgo.app.referral
+package com.duckduckgo.referral.impl
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -39,7 +39,7 @@ import javax.inject.Inject
     boundType = AppReferrer::class,
 )
 @SingleInstanceIn(AppScope::class)
-class AppReferenceSharePreferences @Inject constructor(
+class AppReferrerSharedPreferences @Inject constructor(
     private val context: Context,
     @AppCoroutineScope private val coroutineScope: CoroutineScope,
     private val dispatcherProvider: DispatcherProvider,
