@@ -277,6 +277,7 @@ import com.duckduckgo.app.global.model.domain
 import com.duckduckgo.app.global.model.domainMatchesUrl
 import com.duckduckgo.app.global.model.orderedTrackerBlockedEntities
 import com.duckduckgo.app.location.data.LocationPermissionType
+import com.duckduckgo.app.onboarding.CustomAiOnboarding
 import com.duckduckgo.app.onboarding.store.OnboardingStore
 import com.duckduckgo.app.onboardingbranddesignupdate.OnboardingBrandDesignUpdateToggles
 import com.duckduckgo.app.pixels.AppPixelName
@@ -559,6 +560,7 @@ class BrowserTabViewModel @Inject constructor(
     private val downloadsRepository: DownloadsRepository,
     private val onboardingBrandDesignUpdateToggles: OnboardingBrandDesignUpdateToggles,
     private val onboardingStore: OnboardingStore,
+    private val customAiOnboarding: CustomAiOnboarding,
 ) : ViewModel(),
     WebViewClientListener,
     EditSavedSiteListener,
@@ -5083,7 +5085,7 @@ class BrowserTabViewModel @Inject constructor(
                     val uri = "https://duckduckgo.com/pro".toUri().buildUpon()
                         .appendQueryParameter("origin", "funnel_onboarding_android")
                         .apply {
-                            if (onboardingStore.isCustomAiOnboardingFlow()) {
+                            if (customAiOnboarding.isActive()) {
                                 appendQueryParameter("featurePage", "duckai")
                             }
                         }
