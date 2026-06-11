@@ -30,17 +30,4 @@ interface OnboardingStore {
     fun setInputScreenSelectionOverriddenByUser()
     fun setDuckAiOnboardingFlow()
     fun isDuckAiOnboardingFlow(): Boolean
-
-    /**
-     * Marks that the app was installed through the custom AI onboarding referral link
-     * (Play Store install referrer carrying `onboarding=ai`).
-     */
-    fun setCustomAiOnboardingFlow()
-
-    /**
-     * `true` if the user installs through AI referral link
-     *
-     * **Note: this feature is WIP, details to follow during the rest of integration**
-     */
-    fun isCustomAiOnboardingFlow(): Boolean
 }
