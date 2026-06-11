@@ -28,6 +28,7 @@ import dagger.Lazy
 import dagger.SingleInstanceIn
 import kotlinx.coroutines.withTimeoutOrNull
 import logcat.LogPriority.INFO
+import logcat.LogPriority.WARN
 import logcat.logcat
 import javax.inject.Inject
 
@@ -53,6 +54,9 @@ class RealCustomAiOnboarding @Inject constructor(
     private val sharedPreferencesProvider: SharedPreferencesProvider,
 ) : ReferrerParserPlugin, CustomAiOnboarding {
 
+    // Single cached instance on purpose: the writer (process) and the reader (isActive) MUST share
+    // the same SharedPreferences instance, so keep this `by lazy` (resolved once) rather than
+    // fetching per call.
     private val preferences by lazy { sharedPreferencesProvider.getSharedPreferences(FILENAME) }
 
     override fun process(referrerParts: List<String>) {
@@ -64,7 +68,7 @@ class RealCustomAiOnboarding @Inject constructor(
                 logcat(INFO) { "Custom AI onboarding referral detected" }
                 preferences.edit { putBoolean(KEY_CUSTOM_AI_ONBOARDING_FLOW, true) }
             }
-        }
+        }.onFailure { logcat(WARN) { "Failed to persist custom AI onboarding flag: ${it.message}" } }
     }
 
     override suspend fun isActive(): Boolean {
