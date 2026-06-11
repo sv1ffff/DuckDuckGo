@@ -58,6 +58,7 @@ import com.duckduckgo.app.global.install.AppInstallStore
 import com.duckduckgo.app.global.install.daysInstalled
 import com.duckduckgo.app.onboarding.store.OnboardingStore
 import com.duckduckgo.app.onboarding.ui.view.DaxTypeAnimationTextView
+import com.duckduckgo.app.onboarding.ui.view.OnboardingFillImageView
 import com.duckduckgo.app.onboarding.ui.view.TouchInterceptingLinearLayout
 import com.duckduckgo.app.pixels.AppPixelName
 import com.duckduckgo.app.pixels.AppPixelName.SITE_NOT_WORKING_SHOWN
@@ -637,6 +638,8 @@ sealed class OnboardingDaxDialogCta(
         appInstallStore = appInstallStore,
     ) {
 
+        open val backgroundFillSpec: BackgroundFillSpec? = null
+
         protected var ctaView: View? = null
 
         private var runningFadeIn: AnimatorSet? = null
@@ -1112,8 +1115,10 @@ sealed class OnboardingDaxDialogCta(
         }
 
         private fun bannerFor(container: View): BackgroundBanner? {
-            val view = container.findViewById<ImageView>(R.id.contextualBrandDesignBackground) ?: return null
-            return BackgroundBanner(view, backgroundRes)
+            val view = container.findViewById<OnboardingFillImageView>(R.id.contextualBrandDesignBackground) ?: return null
+            val fillHeightPx = backgroundFillSpec?.heightDpFor(deviceInfo.isTablet())?.toPx(view.context)?.toInt() ?: 0
+            val maxHeightFraction = backgroundFillSpec?.maxHeightFraction ?: 1f
+            return BackgroundBanner(view, backgroundRes, fillHeightPx, maxHeightFraction)
         }
 
         /**
@@ -1122,8 +1127,10 @@ sealed class OnboardingDaxDialogCta(
          * so callers don't need to thread flags through.
          */
         internal class BackgroundBanner(
-            private val view: ImageView,
+            private val view: OnboardingFillImageView,
             @DrawableRes private val res: Int,
+            private val fillHeightPx: Int,
+            private val maxHeightFraction: Float,
         ) {
             val isShowing: Boolean get() = view.isVisible
 
@@ -1131,6 +1138,11 @@ sealed class OnboardingDaxDialogCta(
             fun show() {
                 if (res == 0) return
                 view.setImageResource(res)
+                if (fillHeightPx > 0) {
+                    view.setFillHeight(fillHeightPx, maxHeightFraction)
+                } else {
+                    view.clearFill()
+                }
                 view.visibility = View.VISIBLE
                 view.doOnPreDraw { it.translationY = offScreenY() }
             }
@@ -1306,6 +1318,14 @@ sealed class OnboardingDaxDialogCta(
         private const val MAX_ALPHA = 1.0f
         private const val MIN_ALPHA = 0.0f
     }
+}
+
+data class BackgroundFillSpec(
+    val fillHeightDp: Float,
+    val tabletFillHeightDp: Float = fillHeightDp,
+    val maxHeightFraction: Float = 1f,
+) {
+    fun heightDpFor(isTablet: Boolean): Float = if (isTablet) tabletFillHeightDp else fillHeightDp
 }
 
 sealed class DaxBubbleCta(
@@ -1618,6 +1638,8 @@ sealed class DaxBubbleCta(
         onboardingStore = onboardingStore,
         appInstallStore = appInstallStore,
     ) {
+
+        open val backgroundFillSpec: BackgroundFillSpec? = null
 
         protected fun View.isTablet(): Boolean = deviceInfo.isTablet()
 

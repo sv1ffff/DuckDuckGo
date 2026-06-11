@@ -305,6 +305,7 @@ import com.duckduckgo.common.utils.ConflatedJob
 import com.duckduckgo.common.utils.DispatcherProvider
 import com.duckduckgo.common.utils.FragmentViewModelFactory
 import com.duckduckgo.common.utils.KeyboardVisibilityUtil
+import com.duckduckgo.common.utils.device.isTablet
 import com.duckduckgo.common.utils.extensions.hideKeyboard
 import com.duckduckgo.common.utils.extensions.html
 import com.duckduckgo.common.utils.extensions.showKeyboard
@@ -2948,7 +2949,7 @@ class BrowserTabFragment :
             }
 
             is Command.SetBrowserBackground -> {
-                setBrowserBackgroundRes(it.backgroundRes, it.useRebrandBackground)
+                setBrowserBackgroundRes(it.backgroundRes, it.useRebrandBackground, it.fillHeightDp, it.fillMaxHeightFraction)
                 if (it.backgroundColorAttr != 0) {
                     setNewTabBackgroundColor(it.backgroundColorAttr)
                 }
@@ -3069,6 +3070,8 @@ class BrowserTabFragment :
     private fun setBrowserBackgroundRes(
         @DrawableRes backgroundRes: Int,
         useRebrandBackground: Boolean,
+        fillHeightDp: Float = 0f,
+        fillMaxHeightFraction: Float = 1f,
     ) {
         if (useRebrandBackground) {
             newBrowserTab.browserBackground.apply {
@@ -3078,6 +3081,11 @@ class BrowserTabFragment :
             newBrowserTab.rebrandBrowserBackground.apply {
                 setImageResource(backgroundRes)
                 isVisible = true
+                if (fillHeightDp > 0f) {
+                    setFillHeight(fillHeightDp.toPx(context).toInt(), fillMaxHeightFraction)
+                } else {
+                    clearFill()
+                }
             }
         } else {
             newBrowserTab.rebrandBrowserBackground.gone()
@@ -6105,7 +6113,12 @@ class BrowserTabFragment :
             }
 
             if (configuration is DaxBubbleCta.BrandDesignUpdateBubbleCta) {
-                setBrowserBackgroundRes(configuration.backgroundRes, useRebrandBackground = true)
+                setBrowserBackgroundRes(
+                    configuration.backgroundRes,
+                    useRebrandBackground = true,
+                    fillHeightDp = configuration.backgroundFillSpec?.heightDpFor(configuration.deviceInfo.isTablet()) ?: 0f,
+                    fillMaxHeightFraction = configuration.backgroundFillSpec?.maxHeightFraction ?: 1f,
+                )
                 setNewTabBackgroundColor(com.duckduckgo.mobile.android.R.attr.onboardingSurfaceBackdrop)
                 configureBrandDesignFitListener()
                 brandDesignDialogScrollView.post { configuration.applyFit() }
