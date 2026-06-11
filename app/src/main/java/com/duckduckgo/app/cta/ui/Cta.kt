@@ -1589,7 +1589,6 @@ sealed class DaxBubbleCta(
         val maxHeightDp: Float,
         val anchorToCardOnTablet: Boolean,
     ) {
-        /** Bottom-anchored resting offset: the legacy top-anchored position re-expressed against the parent bottom. */
         val bottomTranslationYDp: Float get() = translationYDp + maxHeightDp
     }
 
